@@ -10,6 +10,9 @@ const BASE_SHOP_DOMAIN = process.env.BASE_SHOP_DOMAIN;
 const MY_STORE_DOMAIN = process.env.MY_STORE_DOMAIN;
 const MY_STORE_ACCESS_TOKEN = process.env.MY_STORE_ACCESS_TOKEN;
 
+const LIMIT = process.env.LIMIT || 10;
+const SCHEDULE = process.env.SCHEDULE || '0 0 * * *';
+
 console.log('BASE_ACCESS_TOKEN', BASE_ACCESS_TOKEN);
 console.log('BASE_SHOP_DOMAIN', BASE_SHOP_DOMAIN);
 console.log('MY_STORE_DOMAIN', MY_STORE_DOMAIN);
@@ -23,7 +26,7 @@ const main = async () => {
     const after = endCursor ? `, after: \"${endCursor}\"` : '';
     const query = `
       {
-        products(first: 10${after}) {
+        products(first: ${LIMIT}${after}) {
           edges {
             cursor
             node {
@@ -68,7 +71,7 @@ const main = async () => {
       hasNextPage = response.data.data.products.pageInfo.hasNextPage;
       endCursor = response.data.data.products.pageInfo.endCursor;
     } catch (err) {
-      console.error('Error fetching products:', err.response?.data || err.message);
+      console.error('❌ Error fetching products:', err.response?.data || err.message);
       break;
     }
   }
@@ -170,7 +173,7 @@ const checkExistProduct = async (product) => {
   }
 }
 
-// main();
-cron.schedule('0 0 * * *', async () => {
+cron.schedule(SCHEDULE, async () => {
+  console.log('🔄 Running cron job at:', new Date().toISOString());
   await main();
 });
